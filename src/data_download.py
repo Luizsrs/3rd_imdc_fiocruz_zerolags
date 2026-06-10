@@ -1,53 +1,48 @@
 import os
-import sys
-from ftplib import FTP
+import pandas as pd
+import numpy as np
 
-def download_imdc_datasets():
-    ftp_server = "info.dengue.mat.br"
-    remote_directory = "data_imdc_2026"
-    local_target_dir = os.path.join("data", "raw")
+def process_all_folds():
+    print("[*] Iniciando a Varredura Anticorrupção para TODOS os Folds...\n")
+    processed_dir = os.path.join("data", "processed")
     
-    os.makedirs(local_target_dir, exist_ok=True)
-    
-    print(f"[*] Iniciando conexão com o servidor FTP: {ftp_server}")
-    
-    try:
-        ftp = FTP(ftp_server)
-        ftp.login()
-        print(f"Login efetuado com sucesso. Navegando para '{remote_directory}'...")
-        ftp.cwd(remote_directory)
+    for fold_id in [1, 2, 3, 4]:
+        input_file = f"raw_predictions_val{fold_id}.parquet"
+        output_name = f"imdc_val{fold_id}_submission.csv"
+        data_path = os.path.join(processed_dir, input_file)
         
-        
-        all_remote_files = ftp.nlst()
-        target_files = [f for f in all_remote_files if f.endswith(".gz") or f.endswith(".csv")]
-        
-        if not target_files:
-            print("[-] Nenhum arquivo válido (.csv ou .gz) foi encontrado no diretório remoto.")
-            ftp.quit()
-            return
+        if not os.path.exists(data_path):
+            continue
             
-        print(f"[+] {len(target_files)} arquivos identificados para download.")
+        print(f"[*] Limpando Quantile Crossing para: {input_file}...")
+        df = pd.read_parquet(data_path)
         
-        for file_name in target_files:
-            local_file_path = os.path.join(local_target_dir, file_name)
-            
-            if os.path.exists(local_file_path):
-                print(f"[~] Arquivo '{file_name}' já existe localmente. Pulando...")
-                continue
-                
-            print(f"[*] Baixando: {file_name} -> {local_file_path}...")
-            
-            with open(local_file_path, "wb") as local_file:
-                # Transfere o arquivo em blocos binários de 8KB
-                ftp.retrbinary(f"RETR {file_name}", local_file.write, blocksize=8192)
-                
-        ftp.quit()
-        print("[+] Pipeline de ingestão concluído. Todos os dados brutos estão na pasta data/raw/.")
+        q_cols = [col for col in df.columns if col.startswith('q_')]
+        q_cols_sorted = sorted(q_cols, key=lambda x: float(x.split('_')[1]))
         
-    except Exception as error:
-        print(f"\n[-] Falha crítica na execução do pipeline de dados: {str(error)}")
-        print("[-] Verifique sua conexão com a internet ou a estabilidade do servidor do InfoDengue.")
-        sys.exit(1)
+        # 1. Ordenação Forçada
+        df[q_cols_sorted] = np.sort(df[q_cols_sorted].values, axis=1)
+        
+        # 2. Renomeando
+        rename_map = {
+            'q_0.025': 'lower_95', 'q_0.05':  'lower_90', 'q_0.1':   'lower_80',
+            'q_0.25':  'lower_50', 'q_0.5':   'pred',     'q_0.75':  'upper_50',
+            'q_0.9':   'upper_80', 'q_0.95':  'upper_90', 'q_0.975': 'upper_95'
+        }
+        df_submission = df.rename(columns=rename_map).copy()
+        
+        final_columns = [
+            'state_code', 'date', 'pred', 
+            'lower_50', 'lower_80', 'lower_90', 'lower_95',
+            'upper_50', 'upper_80', 'upper_90', 'upper_95'
+        ]
+        df_submission = df_submission[final_columns]
+        
+        df_submission['date'] = df_submission['date'].dt.strftime('%Y-%m-%d')
+        output_path = os.path.join(processed_dir, output_name)
+        df_submission.to_csv(output_path, index=False)
+        
+        print(f"[+] VALIDADO e Salvo: {output_name}\n")
 
 if __name__ == "__main__":
-    download_imdc_datasets()
+    process_all_folds()
