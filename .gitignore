@@ -1,0 +1,12 @@
+# Isolamento de Datasets do Desafio
+data/
+*.csv
+*.gz
+*.parquet
+
+# Ambientes Virtuais e Cache do Python
+__pycache__/
+*.pyc
+.venv/
+env/
+.ipynb_checkpoints/
