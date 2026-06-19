@@ -28,10 +28,10 @@ def main():
     print(f"[+] Iniciando transmissão para o Commit Git: {commit}")
 
     arquivos_validador = [
-        "results/submissions/imdc_val1_submission.csv",
-        "results/submissions/imdc_val2_submission.csv",
-        "results/submissions/imdc_val3_submission.csv",
-        "results/submissions/imdc_val4_submission.csv"
+    "results/submissions/imdc_val1_chik_submission.csv",
+    "results/submissions/imdc_val2_chik_submission.csv",
+    "results/submissions/imdc_val3_chik_submission.csv",
+    "results/submissions/imdc_val4_chik_submission.csv"
     ]
 
     for caminho_csv in arquivos_validador:
@@ -58,9 +58,9 @@ def main():
             try:
                 upload_prediction(
                     api_key=API_KEY,
-                    disease="A90",
+                    disease="A92.0",
                     repository=REPOSITORY,
-                    description=f"Validação automatizada - {nome_base}",
+                    description=f"Validação - CHIKUNGUNYA - {nome_base}",
                     commit=commit,
                     case_definition="probable",
                     published=True,
