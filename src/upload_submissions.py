@@ -4,7 +4,6 @@ import pandas as pd
 from mosqlient import upload_prediction
 
 API_KEY = "zero_lags:f46c7c08-f09c-4634-b87b-6e4c7282e7e6" 
-
 REPOSITORY = "Luizsrs/3rd_imdc_fiocruz_zerolags" 
 
 MAPA_IBGE = {
@@ -22,22 +21,22 @@ def pegar_hash_do_commit():
 
 def main():
     commit = pegar_hash_do_commit()
-    print(f"[+] Iniciando transmissão para o Commit Git: {commit}")
+    print(f"[+] Transmissão iniciada. Commit Git: {commit}")
 
     arquivos_validador = [
-    "results/submissions/imdc_val1_chik_submission.csv",
-    "results/submissions/imdc_val2_chik_submission.csv",
-    "results/submissions/imdc_val3_chik_submission.csv",
-    "results/submissions/imdc_val4_chik_submission.csv"
+        "results/submissions/imdc_val1_submission.csv",
+        "results/submissions/imdc_val2_submission.csv",
+        "results/submissions/imdc_val3_submission.csv",
+        "results/submissions/imdc_val4_submission.csv"
     ]
 
     for caminho_csv in arquivos_validador:
         if not os.path.exists(caminho_csv):
-            print(f"[-] Arquivo não encontrado: {caminho_csv}. Execute o main_pipeline.py primeiro.")
+            print(f"[-] Arquivo não encontrado: {caminho_csv}")
             continue
 
         nome_base = os.path.basename(caminho_csv)
-        print(f"\n[+] Enviando dados do arquivo: {nome_base}")
+        print(f"\n[+] Enviando arquivo: {nome_base}")
         df = pd.read_csv(caminho_csv)
 
         for uf, df_uf in df.groupby('location'):
@@ -55,9 +54,9 @@ def main():
             try:
                 upload_prediction(
                     api_key=API_KEY,
-                    disease="A92.0",
+                    disease="A90",
                     repository=REPOSITORY,
-                    description=f"Validação automatizada - CHIKUNGUNYA - {nome_base}",
+                    description=f"Validacao automatizada - {nome_base}",
                     commit=commit,
                     case_definition="probable",
                     published=True,
@@ -66,14 +65,14 @@ def main():
                     adm_1=codigo_ibge,
                     prediction=dados_json
                 )
-                print(f"  [✓] Estado {uf} transmitido com sucesso!")
+                print(f"  [✓] Estado {uf} enviado.")
             except Exception as erro:
                 if "Duplication found" in str(erro):
-                    print(f"  [✓] Estado {uf} já estava salvo no servidor (Duplicado).")
+                    print(f"  [✓] Estado {uf} já atualizado no servidor.")
                 else:
-                    print(f"  [-] Falha de conexão no estado {uf}: {erro}")
+                    print(f"  [-] Erro no estado {uf}: {erro}")
 
-    print("\n[✓] Transmissão concluída!")
+    print("\n[✓] Processo concluído.")
 
 if __name__ == "__main__":
     main()
