@@ -55,7 +55,7 @@ def main():
             try:
                 upload_prediction(
                     api_key=API_KEY,
-                    disease="A92.0",  # Certifique-se de que está A92.0 para Chikungunya
+                    disease="A92.0",
                     repository=REPOSITORY,
                     description=f"Validação automatizada - CHIKUNGUNYA - {nome_base}",
                     commit=commit,
