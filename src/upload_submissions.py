@@ -3,10 +3,7 @@ import subprocess
 import pandas as pd
 from mosqlient import upload_prediction
 
-# =====================================================================
-# APAGUE O TEXTO ABAIXO E COLOQUE A SUA CHAVE DO SITE AQUI DENTRO
 API_KEY = "zero_lags:f46c7c08-f09c-4634-b87b-6e4c7282e7e6" 
-# =====================================================================
 
 REPOSITORY = "Luizsrs/3rd_imdc_fiocruz_zerolags" 
 
@@ -58,9 +55,9 @@ def main():
             try:
                 upload_prediction(
                     api_key=API_KEY,
-                    disease="A92.0",
+                    disease="A92.0",  # Certifique-se de que está A92.0 para Chikungunya
                     repository=REPOSITORY,
-                    description=f"Validação - CHIKUNGUNYA - {nome_base}",
+                    description=f"Validação automatizada - CHIKUNGUNYA - {nome_base}",
                     commit=commit,
                     case_definition="probable",
                     published=True,
@@ -71,7 +68,10 @@ def main():
                 )
                 print(f"  [✓] Estado {uf} transmitido com sucesso!")
             except Exception as erro:
-                print(f"  [-] Falha no estado {uf}: {erro}")
+                if "Duplication found" in str(erro):
+                    print(f"  [✓] Estado {uf} já estava salvo no servidor (Duplicado).")
+                else:
+                    print(f"  [-] Falha de conexão no estado {uf}: {erro}")
 
     print("\n[✓] Transmissão concluída!")
 
