@@ -65,8 +65,8 @@ def main():
     mapeamento_quantil = dict(zip(quantis_imdc, colunas_saida))
     
     janelas_validacao = {
-        1: {"treino_fim": "2022-10-01", "val_inicio": "2022-10-02", "val_fim": "2023-10-01"},
-        2: {"treino_fim": "2023-10-01", "val_inicio": "2023-10-01", "val_fim": "2024-09-29"},
+        1: {"treino_fim": "2022-10-02", "val_inicio": "2022-10-09", "val_fim": "2023-10-01"},
+        2: {"treino_fim": "2023-10-01", "val_inicio": "2023-10-08", "val_fim": "2024-09-29"},
         3: {"treino_fim": "2024-10-01", "val_inicio": "2024-10-06", "val_fim": "2025-09-28"},
         4: {"treino_fim": "2025-10-01", "val_inicio": "2025-10-05", "val_fim": "2026-10-04"}
     }
